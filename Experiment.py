@@ -73,20 +73,6 @@ class Experiment:
             self.unlabeled_set.add(line.id)
         logging.info("Sentence Size: %d" % len(self.data_dict))
 
-    def init_sample_random(self):
-        """
-        随机初始化采样方法
-
-        :return: 从未标记id中随机抽取一部分样本
-        """
-        # 剩余样本不足则返回全部
-        if len(self.unlabeled_set) <= Experiment.sample_number:
-            sample_list = list(self.unlabeled_set)
-        # 否则随机抽取m个样本的ID
-        else:
-            sample_list = random.sample(self.unlabeled_set, Experiment.sample_number)
-        return sample_list
-
     def human_oracle(self, sample_list) -> bool:
         """
         模拟人类审核，假设审核结果一定正确
@@ -135,8 +121,13 @@ class Experiment:
         self.encoded_data_dict = self.encoder.handle(self.data_dict)
         # 初始化采样循环
         while True:
+            # 随机初始化采样方法
             if Experiment.init_sample_method == "random":
-                sample_list = self.init_sample_random()
+                sample_list = self.encoder.random_sample(self.unlabeled_set, Experiment.sample_number)
+            # 风险策略初始化采样方法
+            elif Experiment.init_sample_method == "risk":
+                sample_list = self.encoder.risk_sample(self.unlabeled_set, self.encoded_data_dict,
+                                                       Experiment.sample_number)
             else:
                 return
             # 人工审核后如果SBR数目达到阈值则结束初始化采样
@@ -181,7 +172,8 @@ class Experiment:
                 self.model.train(x_train, y_train)
             # 记录召回率
             recall = float(len(labeled_pos_data_id)) / real_pos_num
-            logging.info("Epoch: %d, Recall: %f" % (i + 1, recall))
+            logging.info("Epoch: %d, Recall: %f, Label Rate: %f" %
+                         (i + 1, recall, len(self.labeled_set) / len(self.label_dict)))
             # 达到召回率则退出循环
             if len(labeled_pos_data_id) >= target:
                 break
