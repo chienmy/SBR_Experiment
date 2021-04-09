@@ -17,7 +17,6 @@ class OneHotEncoder(Encoder):
         # 对单词计数
         for v in origin_data_dict.values():
             self.counter.update(v)
-        logging.info("Word Dictionary Size: %d" % len(self.counter))
         # 使用LabelEncoder编码
         self.label_encoder.fit(list(self.counter.keys()))
         result_dict = {}

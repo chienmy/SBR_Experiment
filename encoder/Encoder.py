@@ -15,10 +15,12 @@ class Encoder:
         pass
 
     @abc.abstractmethod
-    # 边训练边提取向量
     def handle_append(self, labeled_data_dict: dict, unlabeled_data_dict: dict) -> dict:
         """
+        边训练边提取向量
 
+        :param labeled_data_dict: 已标记的数据集合
+        :param unlabeled_data_dict: 未标记的数据集合
         """
         pass
 

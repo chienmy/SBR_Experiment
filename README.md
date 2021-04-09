@@ -6,10 +6,10 @@ The  purpose of this experiment is to find unlabelled security bugs among thousa
 
 - `encoder/`: Different method to transform words into vectors
 - `model/`: Training different models and predict the probability of SBR
-- `Experiment.py`: Main process
+- `experiment/`: Experiments to run
 - `main.py`: Runner
 
 ## Configure
 
-All configurations are in [`Experiment`](./Experiment.py) class.
+All configurations are in [`BaseExperiment`](./experiment/BaseExperiment.py) class.
 
