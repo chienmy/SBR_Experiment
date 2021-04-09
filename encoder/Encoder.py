@@ -15,6 +15,14 @@ class Encoder:
         pass
 
     @abc.abstractmethod
+    # 边训练边提取向量
+    def handle_append(self, labeled_data_dict: dict, unlabeled_data_dict: dict) -> dict:
+        """
+
+        """
+        pass
+
+    @abc.abstractmethod
     def risk_sample(self, label_set: set, encoded_dict: dict, sample_num: int) -> set:
         """
         与特征提取方法对应的风险策略采样计算
