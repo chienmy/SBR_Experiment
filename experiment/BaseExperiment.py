@@ -13,58 +13,62 @@ class BaseExperiment:
     """
     实验基类
     """
-    # ====实验参数设置====
-    # 初始化采样方法
-    init_sample_method = "random"
-    # 采样个数（初始化采样、确定性采样、不确定性采样）
-    sample_number = 10
-    # 开始训练的SBR阈值
-    SBR_threshold = 1
-    # presumptive non-relevant 最小采样数目
-    pnr_sample = 100
-    # aggressive undersampling 阈值
-    aggressive_threshold = 15
-    # 主动学习循环次数上限
-    learning_cycle = 50
-    # 召回率阈值
-    recall_threshold = 0.65
-    # 确定性采样和不确定性采样的分界值
-    query_threshold = 10
-    # 查找策略选择的样本数
-    query_number = 10
-    # 是否打印日志
-    log_output = True
 
-    def __init__(self, encoder: Encoder, model: Model):
+    def __init__(self, name: str, encoder: Encoder, model: Model):
+        # 实验名称
+        self._name = name
         # 特征提取数据集
-        self.data_dict = {}
+        self._data_dict = {}
         # 特征编码后数据集
-        self.encoded_data_dict = {}
+        self._encoded_data_dict = {}
         # 数据对应的标签
-        self.label_dict = {}
+        self._label_dict = {}
         # 已标记样本ID集合
-        self.labeled_set = set()
+        self._labeled_set = set()
         # 未标记样本ID集合
-        self.unlabeled_set = set()
+        self._unlabeled_set = set()
         # human oracle的顺序
-        self.oracle_list = []
+        self._oracle_list = []
         # 使用的特征提取
-        self.encoder = encoder
+        self._encoder = encoder
         # 使用的模型
-        self.model = model
+        self._model = model
 
-    def init_data_dict(self, report_file) -> None:
+        # ====实验参数设置====
+        # 初始化采样方法
+        self.init_sample_method = "random"
+        # 采样个数（初始化采样、确定性采样、不确定性采样）
+        self.sample_number = 10
+        # 开始训练的SBR阈值
+        self.SBR_threshold = 1
+        # presumptive non-relevant 最小采样数目
+        self.pnr_sample = 100
+        # aggressive undersampling 阈值
+        self.aggressive_threshold = 15
+        # 主动学习循环次数上限
+        self.learning_cycle = 50
+        # 召回率阈值
+        self.recall_threshold = 0.65
+        # 确定性采样和不确定性采样的分界值
+        self.query_threshold = 10
+        # 查找策略选择的样本数
+        self.query_number = 10
+        # 是否打印日志
+        self.log_output = True
+
+    def init_data_dict(self, data_dir: str, report_file: str) -> None:
         """
         根据一个文件初始化实验数据集
 
+        :param data_dir: datasets文件夹地址
         :param report_file: datasets/report/目录下文件名
         """
         # 读取报告csv
-        df = pd.read_csv(os.path.join("datasets/report/", report_file))
+        df = pd.read_csv(os.path.join(data_dir, "report", report_file))
         # 取后一半
         df = df.iloc[int(len(df)/2):, :]
         # 读取停用词列表
-        stop_words = pd.read_csv("datasets/stopwords.csv", header=None).iloc[:, 0].tolist()
+        stop_words = pd.read_csv(os.path.join(data_dir, "stopwords.csv"), header=None).iloc[:, 0].tolist()
         for line in df.itertuples():
             words = []
             # 拼接summary和description
@@ -74,10 +78,10 @@ class BaseExperiment:
                 # 去除停用词、去除空字符串、去除数字
                 if w not in stop_words and len(w) > 0 and not w.isdigit():
                     words.append(w)
-            self.data_dict[line.id] = words
-            self.label_dict[line.id] = line.security
-            self.unlabeled_set.add(line.id)
-        self.log_info("Sentence Size: %d" % len(self.data_dict))
+            self._data_dict[line.id] = words
+            self._label_dict[line.id] = line.security
+            self._unlabeled_set.add(line.id)
+        self.log_info("Sentence Size: %d" % len(self._data_dict))
 
     def human_oracle(self, sample_list) -> bool:
         """
@@ -88,11 +92,11 @@ class BaseExperiment:
         """
         # 将未标记样本设置为已标记
         for sample_id in sample_list:
-            self.unlabeled_set.remove(sample_id)
-            self.labeled_set.add(sample_id)
-        self.oracle_list.extend(sample_list)
+            self._unlabeled_set.remove(sample_id)
+            self._labeled_set.add(sample_id)
+        self._oracle_list.extend(sample_list)
         # 计算SBR的总数，用于决定是否开始训练
-        SBR_num = len(self.get_data_id_by_label(1, self.labeled_set))
+        SBR_num = len(self.get_data_id_by_label(1, self._labeled_set))
         return SBR_num >= self.SBR_threshold
 
     def get_data_id_by_label(self, label: int, data_id_set) -> list:
@@ -103,7 +107,7 @@ class BaseExperiment:
         :param data_id_set: 数据Id集合
         :return: 数据列表
         """
-        return list(filter(lambda i: self.label_dict[i] == label, data_id_set))
+        return list(filter(lambda i: self._label_dict[i] == label, data_id_set))
 
     def get_data_and_label(self, data_id_set) -> tuple:
         """
@@ -112,9 +116,18 @@ class BaseExperiment:
         :param data_id_set: 数据ID集合
         :return: 训练集数据, 训练集标签
         """
-        x_train = [self.encoded_data_dict[i] for i in data_id_set]
-        y_train = [self.label_dict[i] for i in data_id_set]
+        x_train = [self._encoded_data_dict[i] for i in data_id_set]
+        y_train = [self._label_dict[i] for i in data_id_set]
         return x_train, y_train
+
+    def clear(self) -> None:
+        """
+        清空实验结果，恢复初始状态
+        """
+        self._unlabeled_set.clear()
+        self._unlabeled_set.update(self._data_dict.keys())
+        self._labeled_set.clear()
+        self._oracle_list.clear()
 
     def log_info(self, log: str) -> None:
         """
@@ -132,7 +145,7 @@ class BaseExperiment:
         :param recall: 召回率
         :return: SBR数目
         """
-        real_pos_num = len(self.get_data_id_by_label(1, self.data_dict.keys()))
+        real_pos_num = len(self.get_data_id_by_label(1, self._data_dict.keys()))
         return int(math.ceil(real_pos_num * recall))
 
     def get_cost(self, recall: float) -> int:
@@ -142,7 +155,7 @@ class BaseExperiment:
         :param recall: 召回率
         :return: 达到召回率所需的cost，如果达不到则返回-1
         """
-        label_seq = [self.label_dict[i] for i in self.oracle_list]
+        label_seq = [self._label_dict[i] for i in self._oracle_list]
         target = self.get_recall_target(recall)
         num = 0
         for i in range(len(label_seq)):
@@ -158,12 +171,12 @@ class BaseExperiment:
         :param cost:
         :return: 返回cost对应的召回率，如果无法达到返回-1
         """
-        label_seq = [self.label_dict[i] for i in self.oracle_list]
+        label_seq = [self._label_dict[i] for i in self._oracle_list]
         if cost > len(label_seq):
             return -1
-        return 1.0 * sum(label_seq[:cost]) / len(self.get_data_id_by_label(1, self.data_dict.keys()))
+        return 1.0 * sum(label_seq[:cost]) / len(self.get_data_id_by_label(1, self._data_dict.keys()))
 
-    def run(self) -> None:
+    def run(self, **kwargs) -> None:
         """
         提供具体的实验逻辑
         """
