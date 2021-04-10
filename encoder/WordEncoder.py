@@ -29,7 +29,7 @@ class WordEncoder(Encoder):
             for v in value:
                 target += v
             res[key] = target
-        sorted_key_list = sorted(res, key=lambda x: res[x])
+        sorted_key_list = sorted(list(label_set), key=lambda x: res[x])
         # 返回风险最大的n个作为样本
         return set(sorted_key_list[:sample_num])
 

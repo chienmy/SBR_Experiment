@@ -11,11 +11,10 @@ class ExperimentOne(BaseExperiment):
         """
         主动学习实验逻辑
         """
-        if "bar" in kwargs.keys():
-            bar = kwargs["bar"]
         target = self.get_recall_target(self.recall_threshold)
         # 特征提取
-        self._encoded_data_dict = self._encoder.handle(self._data_dict)
+        if len(self._encoded_data_dict) == 0:
+            self._encoded_data_dict = self._encoder.handle(self._data_dict)
         # 初始化采样循环
         while True:
             # 随机初始化采样方法
@@ -31,13 +30,20 @@ class ExperimentOne(BaseExperiment):
             if self.human_oracle(sample_list):
                 break
         # 开始训练
+        pre_pos_num = 0
         for i in range(self.learning_cycle):
             labeled_pos_data_id = self.get_data_id_by_label(1, self._labeled_set)
+            if "bar" in kwargs.keys():
+                kwargs["bar"](incr=(len(labeled_pos_data_id) - pre_pos_num))
+                pre_pos_num = len(labeled_pos_data_id)
             labeled_neg_data_id = self.get_data_id_by_label(0, self._labeled_set)
             labeled_x_train, labeled_y_train = self.get_data_and_label(self._labeled_set)
             # 从未标记样本中随机采样一定数目的样本
-            unlabeled_x_train, unlabeled_y_train = self.get_data_and_label(random.sample(
-                self._unlabeled_set, max(len(labeled_pos_data_id), self.pnr_sample)))
+            if max(len(labeled_pos_data_id), self.pnr_sample) <= len(self._unlabeled_set):
+                unlabeled_sample = random.sample(self._unlabeled_set, max(len(labeled_pos_data_id), self.pnr_sample))
+            else:
+                unlabeled_sample = self._unlabeled_set
+            unlabeled_x_train, unlabeled_y_train = self.get_data_and_label(unlabeled_sample)
             # 将这些样本全部标记为0
             unlabeled_y_train = [0] * len(unlabeled_x_train)
             # log
@@ -68,8 +74,6 @@ class ExperimentOne(BaseExperiment):
                 y_train = labeled_y_train + [0] * len(prob_index)
                 self._model.train(x_train, y_train)
             # 达到召回率则退出循环
-            if "bar" in kwargs.keys():
-                kwargs["bar"](incr=(len(labeled_pos_data_id) - kwargs["bar"].current()))
             if len(labeled_pos_data_id) >= target:
                 break
             # Query strategy
