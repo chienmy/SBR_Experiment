@@ -43,6 +43,23 @@ class OneHotEncoder(Encoder):
         # 返回风险最大的n个作为样本
         return set(map(lambda e: e[0], risk_list[:sample_num]))
 
+    def handle_append(self, labeled_data_dict: dict, unlabeled_data_dict: dict) -> dict:
+        """
+        边训练边提取向量
+
+        :param labeled_data_dict: 已标记的数据集合
+        :param unlabeled_data_dict: 未标记的数据集合
+        """
+        # 对单词计数
+        for v in labeled_data_dict.values():
+            self.counter.update(v)
+        # 使用LabelEncoder编码
+        self.label_encoder.fit(list(self.counter.keys()))
+        result_dict = {}
+        for data_id, data in unlabeled_data_dict.items():
+            result_dict[data_id] = self._encode(data)
+        return result_dict
+
     def _encode(self, data):
         # 将单词序列转换为one-hot编码
         encoded_data = [0] * len(self.counter)
