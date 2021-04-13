@@ -37,6 +37,7 @@ class ExperimentTwo(BaseExperiment):
             if self.human_oracle(sample_list):
                 break
 
+        pre_pos_num = 0
         for i in range(self.learning_cycle):
             # 已经标记过的原始数据
             labeled_train_data = self.get_origin_data(self._labeled_set)
@@ -50,6 +51,9 @@ class ExperimentTwo(BaseExperiment):
 
             labeled_pos_data_id = self.get_data_id_by_label(1, self._labeled_set)
             labeled_neg_data_id = self.get_data_id_by_label(0, self._labeled_set)
+            if "bar" in kwargs.keys():
+                kwargs["bar"](incr=(len(labeled_pos_data_id) - pre_pos_num))
+                pre_pos_num = len(labeled_pos_data_id)
 
             # 从未标记样本中随机采样一定数目的样本
             unlabeled_x_train, unlabeled_y_train = self.get_data_and_label(random.sample(

@@ -9,34 +9,34 @@ repeat_num = 10
 config_list = [
     {
         "name": "One-hot+随机",
-        "type": "extract_first",
+        "type": "extract_process",
         "encoder": "onehot"
     },
     {
         "name": "One-hot+风险策略",
-        "type": "extract_first",
+        "type": "extract_process",
         "init_sample_method": "risk",
         "encoder": "onehot"
     },
     {
         "name": "Word sequence+随机",
-        "type": "extract_first",
+        "type": "extract_process",
         "encoder": "word"
     },
     {
         "name": "Word sequence+风险策略",
-        "type": "extract_first",
+        "type": "extract_process",
         "init_sample_method": "risk",
         "encoder": "word"
     },
     {
         "name": "Tf-idf+随机",
-        "type": "extract_first",
+        "type": "extract_process",
         "encoder": "tf"
     },
     {
         "name": "Tf-idf+风险策略",
-        "type": "extract_first",
+        "type": "extract_process",
         "init_sample_method": "risk",
         "encoder": "tf"
     },
