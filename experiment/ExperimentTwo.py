@@ -56,9 +56,11 @@ class ExperimentTwo(BaseExperiment):
                 pre_pos_num = len(labeled_pos_data_id)
 
             # 从未标记样本中随机采样一定数目的样本
-            unlabeled_x_train, unlabeled_y_train = self.get_data_and_label(random.sample(
-                self._unlabeled_set, max(len(labeled_pos_data_id), self.pnr_sample)))
-
+            if max(len(labeled_pos_data_id), self.pnr_sample) <= len(self._unlabeled_set):
+                unlabeled_sample = random.sample(self._unlabeled_set, max(len(labeled_pos_data_id), self.pnr_sample))
+            else:
+                unlabeled_sample = self._unlabeled_set
+            unlabeled_x_train, unlabeled_y_train = self.get_data_and_label(unlabeled_sample)
             # 将这些样本全部标记为0
             unlabeled_y_train = [0] * len(unlabeled_x_train)
             # log

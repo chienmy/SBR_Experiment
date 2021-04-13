@@ -63,6 +63,7 @@ class OneHotEncoder(Encoder):
     def _encode(self, data):
         # 将单词序列转换为one-hot编码
         encoded_data = [0] * len(self.counter)
+        data = list(filter(lambda s: s in self.label_encoder.classes_, data))
         for n in self.label_encoder.transform(data):
             encoded_data[n] = 1
         return encoded_data
