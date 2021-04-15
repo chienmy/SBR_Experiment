@@ -22,6 +22,9 @@ class ExperimentTwo(BaseExperiment):
     
     def run(self, **kwargs) -> None:
         target = self.get_recall_target(self.recall_threshold)
+        # 特征提取
+        if len(self._encoded_data_dict) == 0:
+            self._encoded_data_dict = self._encoder.handle(self._data_dict)
         # 初始化采样循环
         while True:
             # 随机初始化采样方法
@@ -36,6 +39,8 @@ class ExperimentTwo(BaseExperiment):
             # 人工审核后如果SBR数目达到阈值则结束初始化采样
             if self.human_oracle(sample_list):
                 break
+        # 初始化采样结束后把特征清空
+        self._encoded_data_dict.clear()
 
         pre_pos_num = 0
         for i in range(self.learning_cycle):

@@ -43,7 +43,7 @@ class WordEncoder(Encoder):
             for word in data:
                 if vocabulary.get(word) is not None:
                     if self.name == "tf":
-                        encoded_data[vocabulary.get(word)] = vocabulary.values()[word]
+                        encoded_data[vocabulary.get(word)] = vocabulary[word]
                     else:
                         encoded_data[vocabulary.get(word)] += 1
             result_dict[data_id] = encoded_data

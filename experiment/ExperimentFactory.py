@@ -12,7 +12,7 @@ class ExperimentFactory:
         "encoder": "onehot",
         "model": "svm"
     }
-    # encoder和model的创建
+    # 取对应的encoder和model
     encoder_dict = {
         "onehot": OneHotEncoder(),
         "word": WordEncoder("word"),
@@ -25,7 +25,11 @@ class ExperimentFactory:
     @staticmethod
     def build(config: dict):
         """
-        根据配置字典自动生成实验
+        根据配置字典自动生成实验，配置说明如下：\n
+        type: [extract_first | extract_process | extract_random] 先提取再训练 | 边训练边提取 | 随机提取 \n
+        encoder: [onehot | word | tf] One-Hot编码 | Word序列 | TF-IDF编码 \n
+        model: [svm] \n
+        其他参数配置参见 BaseExperiment 中实验参数设置，使用同样的键名即可
 
         :param config: 配置
         :return: 实验对象

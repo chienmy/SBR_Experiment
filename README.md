@@ -7,9 +7,18 @@ The  purpose of this experiment is to find unlabelled security bugs among thousa
 - `encoder/`: Different method to transform words into vectors
 - `model/`: Training different models and predict the probability of SBR
 - `experiment/`: Experiments to run
-- `main.py`: Runner
+- `RQ*.py`: Runner
 
 ## Configure
 
-All configurations are in [`BaseExperiment`](./experiment/BaseExperiment.py) class.
+All configurations are in [`BaseExperiment`](./experiment/BaseExperiment.py) class, and we use [`ExperimentFactory`](./experiment/ExperimentFactory.py) to build its instance from a list of configurations dictionary.
+
+## Running
+
+```bash
+pip install numpy pandas sklearn alive_progress
+python3 RQ*.py
+```
+
+
 
