@@ -75,9 +75,13 @@ class RQ1:
             result = []
             with alive_bar(e.get_recall_target(1.0) * self.repeat_num, title=config["name"]) as bar:
                 for i in range(self.repeat_num):
-                    e.run(bar=bar)
-                    result.append([e.get_cost(recall) for recall in self.recall_list])
-                    e.clear()
+                    try:
+                        e.run(bar=bar)
+                        result.append([e.get_cost(recall) for recall in self.recall_list])
+                        e.clear()
+                    except Exception:
+                        logging.error(config["name"] + " run error!")
+                        result.append([-1] * len(self.recall_list))
                 new_result_dict[config["name"]] = result
         self.result_dict.update(new_result_dict)
 
@@ -106,7 +110,10 @@ class RQ1:
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
     r = RQ1()
-    r.repeat_num = 1
-    r.build_config("extract_process", "Ambari 边提取")
-    r.run("Ambari.csv")
+    r.repeat_num = 10
+    for file_name in ["Ambari", "Camel", "Derby", "Chromium", "Wicket"]:
+        r.build_config("extract_first", file_name + " 先提取")
+        r.run(file_name + ".csv")
+        r.build_config("extract_process", file_name + " 边提取")
+        r.run(file_name + ".csv")
     r.save_excel('output.xlsx')
