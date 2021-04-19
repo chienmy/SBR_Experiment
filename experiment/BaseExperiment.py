@@ -64,7 +64,6 @@ class BaseExperiment:
 
         :param data_dir: datasets文件夹地址
         :param report_file: datasets/report/目录下文件名
-        :param only_half: 只取后一半
         """
         # 读取报告csv
         df = pd.read_csv(os.path.join(data_dir, "report", report_file))
@@ -78,11 +77,11 @@ class BaseExperiment:
             # 拼接summary和description
             s = line.summary + " " if hasattr(line, "summary") else "" + line.description
             # 分词
-            for w in re.split(r'\W+', s.lower()):
-                # 去除停用词、去除空字符串、去除数字
-                if w not in stop_words and len(w) > 0 and not w.isdigit():
-                    words.append(w)
-            self._data_dict[line.id] = words
+            # for w in re.split(r'\W+', s.lower()):
+            #     # 去除停用词、去除空字符串、去除数字
+            #     if w not in stop_words and len(w) > 0 and not w.isdigit():
+            #         words.append(w)
+            self._data_dict[line.id] = s
             self._label_dict[line.id] = line.security
             self._unlabeled_set.add(line.id)
         self.log_info("Sentence Size: %d" % len(self._data_dict))
