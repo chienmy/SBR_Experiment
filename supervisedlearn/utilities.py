@@ -10,7 +10,6 @@ from sklearn.metrics import confusion_matrix
 from sklearn.neighbors import NearestNeighbors
 
 
-
 def get_result_statistics(test_y, predictions):
     tn, fp, fn, tp = confusion_matrix(test_y, predictions).ravel()
     PD = tp / (tp + fn)

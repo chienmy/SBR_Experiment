@@ -70,17 +70,9 @@ class BaseExperiment:
         # 取后一半
         if self.only_half:
             df = df.iloc[int(len(df)/2):, :]
-        # 读取停用词列表
-        stop_words = pd.read_csv(os.path.join(data_dir, "stopwords.csv"), header=None).iloc[:, 0].tolist()
         for line in df.itertuples():
-            words = []
             # 拼接summary和description
             s = line.summary + " " if hasattr(line, "summary") else "" + line.description
-            # 分词
-            # for w in re.split(r'\W+', s.lower()):
-            #     # 去除停用词、去除空字符串、去除数字
-            #     if w not in stop_words and len(w) > 0 and not w.isdigit():
-            #         words.append(w)
             self._data_dict[line.id] = s
             self._label_dict[line.id] = line.security
             self._unlabeled_set.add(line.id)

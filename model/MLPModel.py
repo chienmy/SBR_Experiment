@@ -12,4 +12,5 @@ class MLPModel(Model):
         self.model.fit(x_train, y_train)
 
     def predict(self, x_predict):
-        return self.model.predict_proba(x_predict)
+        pos_index = list(self.model.classes_).index(1)
+        return self.model.predict_proba(x_predict)[:, pos_index]

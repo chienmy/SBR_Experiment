@@ -1,88 +1,33 @@
-from model import SupervisedLearner , SvmModel
-import numpy as np
-import pandas as pd
-recall_list = [0.1 , 0.2 , 0.3 , 0.4 , 0.5 , 0.6 , 0.7 , 0.8 , 0.9 , 1.0]
-config_list = [
-    {
-        "name": "Amb_Amb",
-        "train_data_path": "./datasets/report/Ambari.csv",
-        "test_data_path": "./datasets/report/Ambari.csv",
-        "model": SvmModel()
-    } ,
-    {
-        "name": "Cam_Cam",
-        "train_data_path": "./datasets/report/Camel.csv",
-        "test_data_path": "./datasets/report/Camel.csv",
-        "model": SvmModel()
-    } ,
-    {
-        "name": "Chr_Chr",
-        "train_data_path": "./datasets/report/Chromium.csv",
-        "test_data_path": "./datasets/report/Chromium.csv",
-        "model": SvmModel()
-    } ,
-    {
-        "name": "Der_Der",
-        "train_data_path": "./datasets/report/Derby.csv",
-        "test_data_path": "./datasets/report/Derby.csv",
-        "model": SvmModel()
-    } ,
-    {
-        "name": "Wic_Wic",
-        "train_data_path": "./datasets/report/Wicket.csv",
-        "test_data_path": "./datasets/report/Wicket.csv",
-        "model": SvmModel()
-    }
-]
+from RQutils import save_excel
+from supervisedlearn import SupervisedLearner
 
-def supervised_recall():
-    repeat_num = 10
-    result_dict = {}
-    for config in config_list:
-        result = []
-        for i in range(repeat_num):
-            e = SupervisedLearner()
-            e.init(config["train_data_path"], config["test_data_path"], config["model"])
-            e.run()
-            result.append([e.getRecall(recall) for recall in recall_list])
-        result_dict[config["name"]] = result
-    average_data = []
-    average_index = []
-    for name, data in result_dict.items():
-        average_data.append(np.mean(np.array(data), axis=0))
-        average_index.append(name)
-    # 保存结果至xlsx
-    with pd.ExcelWriter('output.xlsx') as writer:
-        df = pd.DataFrame(average_data, index=average_index, columns=recall_list)
-        df.to_excel(writer, sheet_name="平均结果")
-        for name, data in result_dict.items():
-            df = pd.DataFrame(data, columns=recall_list)
-            df.to_excel(writer, sheet_name=name)
 
-def supervised_cost():
-    repeat_num = 10
-    result_dict = {}
-    for config in config_list:
+class RQ2:
+
+    def __init__(self):
+        # 需要计算cost的recall列表
+        self.recall_list = [0.6, 0.7, 0.8, 0.9, 0.95, 0.99, 1.0]
+        # 每个实验的重复次数
+        self.repeat_num = 10
+        # 结果
+        self.result_dict = {}
+
+    def run(self, train_file: str, test_file: str, model_name: str):
         result = []
-        for i in range(repeat_num):
-            e = SupervisedLearner()
-            e.init(config["train_data_path"], config["test_data_path"], config["model"])
+        for i in range(self.repeat_num):
+            e = SupervisedLearner(
+                "./datasets/report/%s.csv" % (train_file, ),
+                "./datasets/report/%s.csv" % (test_file, ),
+                "svm"
+            )
             e.run()
-            result.append([e.getCost(recall) for recall in recall_list])
-        result_dict[config["name"]] = result
-    average_data = []
-    average_index = []
-    for name, data in result_dict.items():
-        average_data.append(np.mean(np.array(data), axis=0))
-        average_index.append(name)
-    # 保存结果至xlsx
-    with pd.ExcelWriter('output.xlsx') as writer:
-        df = pd.DataFrame(average_data, index=average_index, columns=recall_list)
-        df.to_excel(writer, sheet_name="平均结果")
-        for name, data in result_dict.items():
-            df = pd.DataFrame(data, columns=recall_list)
-            df.to_excel(writer, sheet_name=name)
+            result.append([e.getCost(recall) for recall in self.recall_list])
+        self.result_dict["|".join([train_file, test_file, model_name])] = result
+
 
 if __name__ == "__main__":
-    supervised_recall()
-    supervised_cost()
+    r = RQ2()
+    for file_name in ["Ambari", "Camel", "Chromium", "Derby", "Wicket"]:
+        for model_name in ["svm", "rf", "nb", "knn", "mlp"]:
+            r.run(file_name, file_name, model_name)
+    save_excel("output-RQ2.xlsx", r.result_dict, ["train", "test", "model"] + r.recall_list)

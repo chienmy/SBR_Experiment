@@ -6,8 +6,7 @@ class WordEncoder(Encoder):
 
     def __init__(self, vectorizer_name: str):
         self.name = vectorizer_name
-        self.vectorizer = TfidfVectorizer(stop_words="english", max_features=1000) \
-            if vectorizer_name == "tf" else CountVectorizer(stop_words="english", max_features=1000)
+        self.vectorizer = TfidfVectorizer(**Encoder.params) if vectorizer_name == "tf" else CountVectorizer(**Encoder.params)
 
     def handle(self, origin_data_dict: dict) -> dict:
         keys, values = zip(*origin_data_dict.items())

@@ -4,6 +4,12 @@ import random
 
 class Encoder:
 
+    params = {
+        "stop_words": "english",
+        "max_features": 1000,
+        "min_df": 2
+    }
+
     @abc.abstractmethod
     def handle(self, origin_data_dict: dict) -> dict:
         """

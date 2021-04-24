@@ -1,8 +1,11 @@
+import traceback
+
 import numpy as np
 import pandas as pd
 import logging
 from alive_progress import alive_bar
 from experiment import ExperimentFactory
+from RQutils import save_excel
 
 
 class RQ1:
@@ -17,46 +20,49 @@ class RQ1:
         # 结果
         self.result_dict = {}
 
-    def build_config(self, experiment_type: str, name_prefix: str) -> None:
+    def build_config(self, experiment_type: str, model_type: str, name_prefix: str) -> None:
         """
         生成新的实验配置
 
         :param experiment_type: 实验类型
+        :param model_type: 模型类型
         :param name_prefix: 实验名称前缀，用于区分
         """
-        if name_prefix is None or name_prefix.isspace():
-            name_prefix = ""
-        else:
-            name_prefix = name_prefix + " "
         self.config_list = [{
-            "name": name_prefix + "One-hot+随机",
+            "name": name_prefix + "|One-hot|随机|" + model_type,
             "type": experiment_type,
+            "model": model_type,
             "encoder": "onehot"
         }, {
-            "name": name_prefix + "One-hot+风险策略",
+            "name": name_prefix + "|One-hot|风险策略|" + model_type,
             "type": experiment_type,
+            "model": model_type,
             "init_sample_method": "risk",
             "encoder": "onehot"
         }, {
-            "name": name_prefix + "Word sequence+随机",
+            "name": name_prefix + "|Word sequence|随机|" + model_type,
             "type": experiment_type,
+            "model": model_type,
             "encoder": "word"
         }, {
-            "name": name_prefix + "Word sequence+风险策略",
+            "name": name_prefix + "|Word sequence|风险策略|" + model_type,
             "type": experiment_type,
+            "model": model_type,
             "init_sample_method": "risk",
             "encoder": "word"
         }, {
-            "name": name_prefix + "Tf-idf+随机",
+            "name": name_prefix + "|Tf-idf|随机|" + model_type,
             "type": experiment_type,
+            "model": model_type,
             "encoder": "tf"
         }, {
-            "name": name_prefix + "Tf-idf+风险策略",
+            "name": name_prefix + "|Tf-idf|风险策略|" + model_type,
             "type": experiment_type,
+            "model": model_type,
             "init_sample_method": "risk",
             "encoder": "tf"
         }, {
-            "name": name_prefix + "完全随机",
+            "name": name_prefix + "|完全随机||",
             "type": "extract_random"
         }]
 
@@ -79,41 +85,21 @@ class RQ1:
                         e.run(bar=bar)
                         result.append([e.get_cost(recall) for recall in self.recall_list])
                         e.clear()
-                    except Exception:
+                    except Exception as e:
+                        traceback.print_exc()
                         logging.error(config["name"] + " run error!")
                         result.append([-1] * len(self.recall_list))
                 new_result_dict[config["name"]] = result
         self.result_dict.update(new_result_dict)
 
-    def save_excel(self, file_path: str, save_original=True) -> None:
-        """
-        计算实验结果的平均值并保存到指定文件
-
-        :param file_path: 文件存储位置
-        :param save_original: 是否保存原始数据
-        """
-        average_dict = {}
-        # 计算均值
-        for name, data in self.result_dict.items():
-            average_dict[name] = np.mean(np.array(data), axis=0).tolist()
-        # 保存结果至xlsx
-        with pd.ExcelWriter(file_path) as writer:
-            df = pd.DataFrame(average_dict, index=self.recall_list).transpose()
-            df.to_excel(writer, sheet_name="平均结果")
-            if not save_original:
-                return
-            for name, data in self.result_dict.items():
-                df = pd.DataFrame(data, columns=self.recall_list)
-                df.to_excel(writer, sheet_name=name)
-
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
     r = RQ1()
-    r.repeat_num = 10
-    for file_name in ["Ambari", "Camel", "Derby", "Chromium", "Wicket"]:
-        r.build_config("extract_first", file_name + " 先提取")
-        r.run(file_name + ".csv")
-        r.build_config("extract_process", file_name + " 边提取")
-        r.run(file_name + ".csv")
-    r.save_excel('output.xlsx')
+    r.repeat_num = 1
+    for file_name in ["Ambari", "Camel", "Derby", "Wicket"]:
+        # "svm", "rf", "nb", "knn", "mlp"
+        for model_name in ["svm"]:
+            r.build_config("ml", model_name, file_name)
+            r.run(file_name + ".csv")
+    save_excel("output.xlsx", r.result_dict, ["project", "feature", "init sample", "model"] + r.recall_list)
