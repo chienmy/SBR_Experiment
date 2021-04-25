@@ -1,7 +1,5 @@
 import traceback
 
-import numpy as np
-import pandas as pd
 import logging
 from alive_progress import alive_bar
 from experiment import ExperimentFactory
@@ -100,6 +98,6 @@ if __name__ == "__main__":
     for file_name in ["Ambari", "Camel", "Derby", "Wicket"]:
         # "svm", "rf", "nb", "knn", "mlp"
         for model_name in ["svm"]:
-            r.build_config("ml", model_name, file_name)
+            r.build_config("extract_process", model_name, file_name)
             r.run(file_name + ".csv")
     save_excel("output.xlsx", r.result_dict, ["project", "feature", "init sample", "model"] + r.recall_list)

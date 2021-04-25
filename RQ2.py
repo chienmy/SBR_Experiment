@@ -27,7 +27,7 @@ class RQ2:
 
 if __name__ == "__main__":
     r = RQ2()
-    for file_name in ["Ambari", "Camel", "Chromium", "Derby", "Wicket"]:
+    for file_name in ["Ambari", "Camel", "Derby", "Wicket"]:
         for model_name in ["svm", "rf", "nb", "knn", "mlp"]:
             r.run(file_name, file_name, model_name)
     save_excel("output-RQ2.xlsx", r.result_dict, ["train", "test", "model"] + r.recall_list)
