@@ -1,7 +1,6 @@
 import logging
 import math
 import os
-import re
 
 import pandas as pd
 
@@ -48,7 +47,7 @@ class BaseExperiment:
         # aggressive undersampling 阈值
         self.aggressive_threshold = 15
         # 主动学习循环次数上限
-        self.learning_cycle = 50
+        self.learning_cycle = 100
         # 召回率阈值
         self.recall_threshold = 0.65
         # 确定性采样和不确定性采样的分界值
@@ -142,6 +141,9 @@ class BaseExperiment:
         """
         real_pos_num = len(self.get_data_id_by_label(1, self._data_dict.keys()))
         return int(math.ceil(real_pos_num * recall))
+
+    def get_oracle_label(self) -> list:
+        return list(filter(lambda i: self._label_dict[i] == 1, self._oracle_list))
 
     def get_cost(self, recall: float) -> int:
         """

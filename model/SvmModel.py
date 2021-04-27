@@ -8,10 +8,10 @@ class SvmModel(Model):
 
     def __init__(self):
         self.model = SVC(kernel='linear', probability=True)
-        self.pca = PCA(n_components=200, svd_solver="auto")
+        self.pca = PCA(n_components=1000, svd_solver="auto")
 
     def train(self, x_train, y_train):
-        if min(len(x_train[0]), len(x_train)) > self.pca.components_:
+        if min(len(x_train[0]), len(x_train)) > self.pca.n_components:
             x_train = self.pca.fit_transform(x_train, y_train)
         self.model.fit(x_train, y_train)
 

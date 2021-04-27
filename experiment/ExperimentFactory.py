@@ -1,6 +1,6 @@
 from encoder import OneHotEncoder, WordEncoder
 from model import SvmModel, RFModel, NBModel, KNNModel, MLPModel
-from experiment import ExperimentOne, ExperimentTwo, ExperimentRandom, ExperimentML
+from experiment import ExperimentOne, ExperimentTwo, ExperimentRandom
 
 
 class ExperimentFactory:
@@ -54,11 +54,6 @@ class ExperimentFactory:
         elif default_config["type"] == "extract_random":
             e = ExperimentRandom(
                 default_config["name"],
-                ExperimentFactory.model_dict[default_config["model"]])
-        elif default_config["type"] == "ml":
-            e = ExperimentML(
-                default_config["name"],
-                ExperimentFactory.encoder_dict[default_config["encoder"]],
                 ExperimentFactory.model_dict[default_config["model"]])
         # 根据配置参数更新实验参数
         if e is not None:

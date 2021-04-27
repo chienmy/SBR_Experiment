@@ -17,6 +17,8 @@ class RQ1:
         self.config_list = []
         # 结果
         self.result_dict = {}
+        # 正标记ID顺序
+        self.oracle_order_dict = {}
 
     def build_config(self, experiment_type: str, model_type: str, name_prefix: str) -> None:
         """
@@ -82,6 +84,7 @@ class RQ1:
                     try:
                         e.run(bar=bar)
                         result.append([e.get_cost(recall) for recall in self.recall_list])
+                        self.oracle_order_dict[config["name"]] = e.get_oracle_label()
                         e.clear()
                     except Exception as e:
                         traceback.print_exc()
@@ -97,7 +100,7 @@ if __name__ == "__main__":
     r.repeat_num = 1
     for file_name in ["Ambari", "Camel", "Derby", "Wicket"]:
         # "svm", "rf", "nb", "knn", "mlp"
-        for model_name in ["svm"]:
+        for model_name in ["svm", "rf", "nb", "knn", "mlp"]:
             r.build_config("extract_process", model_name, file_name)
             r.run(file_name + ".csv")
     save_excel("output.xlsx", r.result_dict, ["project", "feature", "init sample", "model"] + r.recall_list)

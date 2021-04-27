@@ -6,7 +6,7 @@ class Encoder:
 
     params = {
         "stop_words": "english",
-        "max_features": 1000,
+        "max_features": 500,
         "min_df": 2
     }
 
