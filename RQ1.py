@@ -17,8 +17,6 @@ class RQ1:
         self.config_list = []
         # 结果
         self.result_dict = {}
-        # 正标记ID顺序
-        self.oracle_order_dict = {}
 
     def build_config(self, experiment_type: str, model_type: str, name_prefix: str) -> None:
         """
@@ -77,6 +75,7 @@ class RQ1:
             e = ExperimentFactory.build(config)
             e.log_output = False
             e.recall_threshold = 1.0
+            e.only_half = False
             e.init_data_dict("./datasets", report_csv)
             result = []
             with alive_bar(e.get_recall_target(1.0) * self.repeat_num, title=config["name"]) as bar:
@@ -84,7 +83,6 @@ class RQ1:
                     try:
                         e.run(bar=bar)
                         result.append([e.get_cost(recall) for recall in self.recall_list])
-                        self.oracle_order_dict[config["name"]] = e.get_oracle_label()
                         e.clear()
                     except Exception as e:
                         traceback.print_exc()
@@ -97,7 +95,7 @@ class RQ1:
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
     r = RQ1()
-    r.repeat_num = 1
+    r.repeat_num = 10
     for file_name in ["Ambari", "Camel", "Derby", "Wicket"]:
         # "svm", "rf", "nb", "knn", "mlp"
         for model_name in ["svm", "rf", "nb", "knn", "mlp"]:

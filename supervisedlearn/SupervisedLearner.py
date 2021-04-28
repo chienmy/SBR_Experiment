@@ -3,7 +3,7 @@ import math
 import warnings
 
 from sklearn.feature_extraction.text import CountVectorizer
-from model import RFModel, SvmModel
+from model import RFModel, SvmModel, MLPModel
 from .dimension_reduce import selectFromLinearSVC2
 from .Sample import Sample
 from .utilities import *
@@ -15,7 +15,8 @@ class SupervisedLearner:
 
     model_dict = {
         "svm": SvmModel(),
-        "rf": RFModel()
+        "rf": RFModel(),
+        "mlp": MLPModel()
     }
 
     def __init__(self, train_data_path: str, test_data_path: str, model: str):

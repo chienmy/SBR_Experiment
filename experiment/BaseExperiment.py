@@ -3,6 +3,7 @@ import math
 import os
 
 import pandas as pd
+from sklearn.metrics.pairwise import cosine_similarity
 
 from encoder import Encoder
 from model import Model
@@ -143,7 +144,23 @@ class BaseExperiment:
         return int(math.ceil(real_pos_num * recall))
 
     def get_oracle_label(self) -> list:
+        """
+        顺序获取审核顺序中标记为SBR的样本编号
+
+        :return: 样本编号列表
+        """
         return list(filter(lambda i: self._label_dict[i] == 1, self._oracle_list))
+
+    def get_similarity(self) -> list:
+        """
+        取位置靠前、靠后各3个样本计算余弦相似度
+
+        :return: 相似度矩阵
+        """
+        oracle_list = self.get_oracle_label()
+        x, y = self.get_data_and_label(oracle_list)
+        x = x[:3] + x[-3:]
+        return cosine_similarity(x).tolist()
 
     def get_cost(self, recall: float) -> int:
         """
